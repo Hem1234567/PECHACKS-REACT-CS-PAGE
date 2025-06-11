@@ -54,7 +54,7 @@ export const TitleSection = () => {
             </div>
 
             <div className="relative text-[clamp(3rem,7vw,5rem)] font-black cursor-default">
-              <span className="absolute inset-0 bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 bg-clip-text text-transparent transform translate-x-1 translate-y-1 opacity-60">
+              <span className="absolute inset-0 bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 bg-clip-text text-transparent transform translate-x-1 translate-y-1 opacity-30">
                 3.0
               </span>
               <span className="absolute inset-0 bg-gradient-to-l from-cyan-300 via-white to-pink-300 bg-clip-text text-transparent transform -translate-x-1 -translate-y-1">
