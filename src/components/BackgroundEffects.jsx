@@ -43,7 +43,7 @@ export const BackgroundEffects = ({ children }) => {
     requestAnimationFrame(animateRadius);
   }, []);
 
-  // Enhanced particle effect with smoother animations
+  // Enhanced particle effect with improved visibility
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -66,22 +66,31 @@ export const BackgroundEffects = ({ children }) => {
     // Particle system with physics
     const particles = [];
     const colors = ["#00D4FF", "#8B5CF6", "#F472B6", "#10B981", "#F97316"];
-    const particleCount = Math.min(Math.floor(window.innerWidth / 15), 100);
+    const particleCount = Math.min(Math.floor(window.innerWidth / 10), 150);
 
-    // Create particles with smooth emergence
+    // Create more visible particles
     for (let i = 0; i < particleCount; i++) {
       setTimeout(() => {
+        const isCenterParticle = i % 5 === 0;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+
         particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 0.8,
-          vy: (Math.random() - 0.5) * 0.8,
-          size: Math.random() * 3 + 1,
-          opacity: 0, // Start invisible
-          targetOpacity: Math.random() * 0.5 + 0.2,
+          x: isCenterParticle
+            ? centerX + (Math.random() - 0.5) * 200
+            : Math.random() * canvas.width,
+          y: isCenterParticle
+            ? centerY + (Math.random() - 0.5) * 200
+            : Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 0.5,
+          vy: (Math.random() - 0.5) * 0.5,
+          size: Math.random() * 4 + 2, // Larger particles (2-6px)
+          opacity: 0,
+          targetOpacity: Math.random() * 0.8 + 0.4, // Higher opacity (0.4-1.2)
           color: colors[Math.floor(Math.random() * colors.length)],
+          isCenterParticle,
         });
-      }, i * 50);
+      }, i * 30);
     }
 
     // Animation loop with optimized rendering
@@ -93,10 +102,22 @@ export const BackgroundEffects = ({ children }) => {
       const mouseAttraction = 0.0001;
       const mouseRepulsion = 0.0003;
       const mouseRepulsionRadius = 100;
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
 
-      particles.forEach((particle, index) => {
+      particles.forEach((particle) => {
         // Smooth opacity transition
         particle.opacity += (particle.targetOpacity - particle.opacity) * 0.05;
+
+        // Center attraction for center particles
+        if (particle.isCenterParticle) {
+          const dx = centerX - particle.x;
+          const dy = centerY - particle.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          const centerForce = 0.0002 * distance;
+          particle.vx += dx * centerForce;
+          particle.vy += dy * centerForce;
+        }
 
         // Mouse interaction physics
         const dx = mousePosition.x - particle.x;
@@ -104,20 +125,18 @@ export const BackgroundEffects = ({ children }) => {
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance < mouseRadius.current) {
-          // Attract particles when inside radius
           const force = mouseAttraction * (1 - distance / mouseRadius.current);
           particle.vx += dx * force;
           particle.vy += dy * force;
         } else if (distance < mouseRepulsionRadius) {
-          // Repel particles when very close to mouse
           const force = mouseRepulsion * (1 - distance / mouseRepulsionRadius);
           particle.vx -= dx * force;
           particle.vy -= dy * force;
         }
 
         // Apply friction
-        particle.vx *= 0.99;
-        particle.vy *= 0.99;
+        particle.vx *= 0.98;
+        particle.vy *= 0.98;
 
         // Update position
         particle.x += particle.vx;
@@ -133,14 +152,11 @@ export const BackgroundEffects = ({ children }) => {
           particle.y = Math.max(0, Math.min(canvas.height, particle.y));
         }
 
-        // Draw particle with glow effect
+        // Draw particle with enhanced glow effect
         ctx.save();
         ctx.globalAlpha = particle.opacity;
-
-        // Glow effect
         ctx.shadowColor = particle.color;
-        ctx.shadowBlur = 10 * particle.opacity;
-
+        ctx.shadowBlur = 25 * particle.opacity; // Stronger glow (increased from 15)
         ctx.fillStyle = particle.color;
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
@@ -148,7 +164,7 @@ export const BackgroundEffects = ({ children }) => {
         ctx.restore();
       });
 
-      // Draw connections with optimized performance
+      // Draw more visible connections
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const p1 = particles[i];
@@ -161,11 +177,11 @@ export const BackgroundEffects = ({ children }) => {
             ctx.save();
             const alpha =
               ((150 - distance) / 150) *
-              0.15 *
+              0.3 * // Stronger connections (increased from 0.2)
               Math.min(p1.opacity, p2.opacity);
             ctx.globalAlpha = alpha;
             ctx.strokeStyle = p1.color;
-            ctx.lineWidth = 1.5;
+            ctx.lineWidth = 3; // Thicker connection lines (increased from 2)
             ctx.beginPath();
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(p2.x, p2.y);
@@ -180,7 +196,7 @@ export const BackgroundEffects = ({ children }) => {
 
     const startAnimation = setTimeout(() => {
       animate(0);
-    }, 500); // Delay start for smoother initial appearance
+    }, 300);
 
     return () => {
       clearTimeout(startAnimation);
@@ -191,10 +207,10 @@ export const BackgroundEffects = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden relative flex flex-col items-center p-0">
-      {/* Enhanced Particle Canvas Background */}
+      {/* Enhanced Particle Canvas Background with higher opacity */}
       <canvas
         ref={canvasRef}
-        className="fixed inset-0 pointer-events-none z-0 opacity-30 transition-opacity duration-1000"
+        className="fixed inset-0 pointer-events-none z-0 opacity-60 transition-opacity duration-1000"
         style={{ background: "transparent" }}
       />
 
@@ -214,10 +230,10 @@ export const BackgroundEffects = ({ children }) => {
               key={i}
               className={`absolute rounded-full blur-[clamp(20px,2.5vw,40px)] ${
                 [
-                  "bg-cyan-500/20 top-1/4 left-1/4",
-                  "bg-purple-500/20 top-3/4 right-1/4",
-                  "bg-pink-500/20 bottom-1/4 left-1/3",
-                  "bg-blue-500/15 top-1/3 right-1/5",
+                  "bg-purple-800/25 top-1/4 left-1/4",
+                  "bg-purple-600/25 top-2/3 right-1/4",
+                  "bg-pink-500/25 bottom-1/4 left-1/3",
+                  "bg-blue-500/20 top-1/3 right-1/5",
                 ][i]
               }`}
               style={{
@@ -252,13 +268,28 @@ export const BackgroundEffects = ({ children }) => {
           ))}
         </div>
 
-        {/* Dynamic mouse follow effect */}
+        {/* First Dynamic mouse follow effect */}
         <motion.div
-          className="absolute inset-0 opacity-20 pointer-events-none"
+          className="absolute inset-0 opacity-25 pointer-events-none"
           style={{
             background: `radial-gradient(${mouseRadius.current}px circle at ${mousePosition.x}px ${mousePosition.y}px, 
-              rgba(0, 217, 255, 0.4), 
-              rgba(168, 85, 247, 0.3), 
+              rgba(0, 217, 255, 0.5),
+              rgba(168, 85, 247, 0.4),
+              transparent 70%)`,
+          }}
+          transition={{
+            background: { duration: 0.2, ease: "easeOut" },
+            layout: { duration: 0.5 },
+          }}
+        />
+
+        {/* Second Dynamic mouse follow effect */}
+        <motion.div
+          className="absolute inset-0 opacity-10 pointer-events-none"
+          style={{
+            background: `radial-gradient(${mouseRadius.current}px circle at ${mousePosition.x}px ${mousePosition.y}px, 
+              rgba(0, 217, 255, 0.4),
+              rgba(168, 85, 247, 0.3),
               transparent 70%)`,
           }}
           transition={{
