@@ -2,48 +2,13 @@ import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 
 export const BackgroundEffects = ({ children }) => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const canvasRef = useRef(null);
-  const mouseRadius = useRef(250);
-  const mouseTargetRadius = useRef(300);
-  const lastUpdateTime = useRef(0);
+  const particlesRef = useRef([]);
+  const animationFrameId = useRef(null);
+  const mousePositionRef = useRef({ x: null, y: null });
+  const interactionRadius = 150; // Radius around mouse that affects particles
 
-  // Mouse position tracking with smooth transitions
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePosition({
-        x: e.clientX,
-        y: e.clientY,
-      });
-      // Expand radius on mouse movement
-      mouseTargetRadius.current = 350;
-      setTimeout(() => {
-        mouseTargetRadius.current = 250;
-      }, 500);
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
-
-  // Smooth radius animation
-  useEffect(() => {
-    const animateRadius = (timestamp) => {
-      if (!lastUpdateTime.current) lastUpdateTime.current = timestamp;
-      const deltaTime = timestamp - lastUpdateTime.current;
-      lastUpdateTime.current = timestamp;
-
-      const lerpFactor = Math.min(deltaTime * 0.005, 1);
-      mouseRadius.current =
-        mouseRadius.current +
-        (mouseTargetRadius.current - mouseRadius.current) * lerpFactor;
-
-      requestAnimationFrame(animateRadius);
-    };
-    requestAnimationFrame(animateRadius);
-  }, []);
-
-  // Enhanced particle effect with improved visibility
+  // Particle system initialization and animation
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -51,112 +16,98 @@ export const BackgroundEffects = ({ children }) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Set canvas size with debounce
-    let resizeTimeout;
+    // Set canvas size
     const resizeCanvas = () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-      }, 100);
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initParticles(); // Reinitialize particles on resize
     };
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
 
-    // Particle system with physics
-    const particles = [];
-    const colors = ["#00D4FF", "#8B5CF6", "#F472B6", "#10B981", "#F97316"];
-    const particleCount = Math.min(Math.floor(window.innerWidth / 10), 150);
+    // Initialize particles with movement properties
+    const initParticles = () => {
+      const colors = ["#00D4FF", "#8B5CF6", "#F472B6", "#10B981", "#F97316"];
+      const particleCount = Math.min(Math.floor(window.innerWidth / 10), 150);
 
-    // Create more visible particles
-    for (let i = 0; i < particleCount; i++) {
-      setTimeout(() => {
-        const isCenterParticle = i % 5 === 0;
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
+      particlesRef.current = Array.from({ length: particleCount }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 3 + 2, // 2-5px
+        opacity: Math.random() * 0.6 + 0.4, // 0.4-1.0
+        color: colors[Math.floor(Math.random() * colors.length)],
+        speedX: (Math.random() - 0.5) * 0.5,
+        speedY: (Math.random() - 0.5) * 0.5,
+        baseSpeedX: (Math.random() - 0.5) * 0.5, // Store base speed for returning to normal
+        baseSpeedY: (Math.random() - 0.5) * 0.5,
+      }));
+    };
 
-        particles.push({
-          x: isCenterParticle
-            ? centerX + (Math.random() - 0.5) * 200
-            : Math.random() * canvas.width,
-          y: isCenterParticle
-            ? centerY + (Math.random() - 0.5) * 200
-            : Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 0.5,
-          vy: (Math.random() - 0.5) * 0.5,
-          size: Math.random() * 4 + 2, // Larger particles (2-6px)
-          opacity: 0,
-          targetOpacity: Math.random() * 0.8 + 0.4, // Higher opacity (0.4-1.2)
-          color: colors[Math.floor(Math.random() * colors.length)],
-          isCenterParticle,
-        });
-      }, i * 30);
-    }
+    // Handle mouse movement
+    const handleMouseMove = (e) => {
+      mousePositionRef.current = {
+        x: e.clientX,
+        y: e.clientY,
+      };
+    };
 
-    // Animation loop with optimized rendering
-    let animationId;
-    const animate = (timestamp) => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Update particle positions with mouse interaction
+    const updateParticles = () => {
+      const mouseX = mousePositionRef.current.x;
+      const mouseY = mousePositionRef.current.y;
 
-      // Mouse attraction effect
-      const mouseAttraction = 0.0001;
-      const mouseRepulsion = 0.0003;
-      const mouseRepulsionRadius = 100;
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-
-      particles.forEach((particle) => {
-        // Smooth opacity transition
-        particle.opacity += (particle.targetOpacity - particle.opacity) * 0.05;
-
-        // Center attraction for center particles
-        if (particle.isCenterParticle) {
-          const dx = centerX - particle.x;
-          const dy = centerY - particle.y;
+      particlesRef.current.forEach((particle) => {
+        // Only interact if mouse position is known
+        if (mouseX !== null && mouseY !== null) {
+          const dx = particle.x - mouseX;
+          const dy = particle.y - mouseY;
           const distance = Math.sqrt(dx * dx + dy * dy);
-          const centerForce = 0.0002 * distance;
-          particle.vx += dx * centerForce;
-          particle.vy += dy * centerForce;
+
+          // If particle is within interaction radius
+          if (distance < interactionRadius) {
+            // Calculate force (stronger when closer to mouse)
+            const force = (interactionRadius - distance) / interactionRadius;
+            const angle = Math.atan2(dy, dx);
+
+            // Apply repelling force
+            const forceX = Math.cos(angle) * force * 5;
+            const forceY = Math.sin(angle) * force * 5;
+
+            particle.speedX = forceX;
+            particle.speedY = forceY;
+          } else {
+            // Gradually return to base speed when outside interaction radius
+            particle.speedX += (particle.baseSpeedX - particle.speedX) * 0.05;
+            particle.speedY += (particle.baseSpeedY - particle.speedY) * 0.05;
+          }
         }
-
-        // Mouse interaction physics
-        const dx = mousePosition.x - particle.x;
-        const dy = mousePosition.y - particle.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance < mouseRadius.current) {
-          const force = mouseAttraction * (1 - distance / mouseRadius.current);
-          particle.vx += dx * force;
-          particle.vy += dy * force;
-        } else if (distance < mouseRepulsionRadius) {
-          const force = mouseRepulsion * (1 - distance / mouseRepulsionRadius);
-          particle.vx -= dx * force;
-          particle.vy -= dy * force;
-        }
-
-        // Apply friction
-        particle.vx *= 0.98;
-        particle.vy *= 0.98;
 
         // Update position
-        particle.x += particle.vx;
-        particle.y += particle.vy;
+        particle.x += particle.speedX;
+        particle.y += particle.speedY;
 
-        // Boundary check with bounce
+        // Bounce off edges
         if (particle.x < 0 || particle.x > canvas.width) {
-          particle.vx *= -0.8;
-          particle.x = Math.max(0, Math.min(canvas.width, particle.x));
+          particle.speedX *= -1;
+          particle.baseSpeedX *= -1;
         }
         if (particle.y < 0 || particle.y > canvas.height) {
-          particle.vy *= -0.8;
-          particle.y = Math.max(0, Math.min(canvas.height, particle.y));
+          particle.speedY *= -1;
+          particle.baseSpeedY *= -1;
         }
 
-        // Draw particle with enhanced glow effect
+        // Keep particles within bounds
+        particle.x = Math.max(0, Math.min(canvas.width, particle.x));
+        particle.y = Math.max(0, Math.min(canvas.height, particle.y));
+      });
+    };
+
+    // Draw all particles with connections
+    const drawParticles = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw particles
+      particlesRef.current.forEach((particle) => {
         ctx.save();
         ctx.globalAlpha = particle.opacity;
-        ctx.shadowColor = particle.color;
-        ctx.shadowBlur = 25 * particle.opacity; // Stronger glow (increased from 15)
         ctx.fillStyle = particle.color;
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
@@ -164,24 +115,20 @@ export const BackgroundEffects = ({ children }) => {
         ctx.restore();
       });
 
-      // Draw more visible connections
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const p1 = particles[i];
-          const p2 = particles[j];
+      // Draw connections between nearby particles
+      for (let i = 0; i < particlesRef.current.length; i++) {
+        for (let j = i + 1; j < particlesRef.current.length; j++) {
+          const p1 = particlesRef.current[i];
+          const p2 = particlesRef.current[j];
           const dx = p1.x - p2.x;
           const dy = p1.y - p2.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
 
           if (distance < 150) {
             ctx.save();
-            const alpha =
-              ((150 - distance) / 150) *
-              0.3 * // Stronger connections (increased from 0.2)
-              Math.min(p1.opacity, p2.opacity);
-            ctx.globalAlpha = alpha;
+            ctx.globalAlpha = (1 - distance / 150) * 0.2;
             ctx.strokeStyle = p1.color;
-            ctx.lineWidth = 3; // Thicker connection lines (increased from 2)
+            ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(p2.x, p2.y);
@@ -190,32 +137,41 @@ export const BackgroundEffects = ({ children }) => {
           }
         }
       }
-
-      animationId = requestAnimationFrame(animate);
     };
 
-    const startAnimation = setTimeout(() => {
-      animate(0);
-    }, 300);
+    // Animation loop
+    const animate = () => {
+      updateParticles();
+      drawParticles();
+      animationFrameId.current = requestAnimationFrame(animate);
+    };
+
+    // Initial setup
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("mousemove", handleMouseMove);
+    animate(); // Start animation loop
 
     return () => {
-      clearTimeout(startAnimation);
       window.removeEventListener("resize", resizeCanvas);
-      cancelAnimationFrame(animationId);
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+      }
     };
-  }, [mousePosition]);
+  }, []);
 
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden relative flex flex-col items-center p-0">
-      {/* Enhanced Particle Canvas Background with higher opacity */}
+      {/* Interactive particle canvas */}
       <canvas
         ref={canvasRef}
-        className="fixed inset-0 pointer-events-none z-0 opacity-60 transition-opacity duration-1000"
+        className="fixed inset-0 pointer-events-none z-0 opacity-70"
         style={{ background: "transparent" }}
       />
 
       <div className="w-full flex-1 flex flex-col items-center justify-start relative z-10">
-        {/* Animated gradient background */}
+        {/* Gradient background */}
         <motion.div
           className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-black to-cyan-900/20"
           initial={{ opacity: 0 }}
@@ -223,32 +179,24 @@ export const BackgroundEffects = ({ children }) => {
           transition={{ duration: 2 }}
         />
 
-        {/* Floating blobs with enhanced animations */}
+        {/* Floating decorative blobs */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {[0, 1, 2, 3].map((i) => (
             <motion.div
               key={i}
-              className={`absolute rounded-full blur-[clamp(20px,2.5vw,40px)] ${
+              className={`absolute rounded-full blur-[20px] ${
                 [
-                  "bg-purple-800/25 top-1/4 left-1/4",
-                  "bg-purple-600/25 top-2/3 right-1/4",
-                  "bg-pink-500/25 bottom-1/4 left-1/3",
-                  "bg-blue-500/20 top-1/3 right-1/5",
+                  "bg-purple-800/20",
+                  "bg-purple-600/20",
+                  "bg-pink-500/20",
+                  "bg-blue-500/15",
                 ][i]
               }`}
               style={{
-                width: [
-                  "clamp(100px,12vw,200px)",
-                  "clamp(120px,15vw,240px)",
-                  "clamp(80px,10vw,160px)",
-                  "clamp(60px,8vw,120px)",
-                ][i],
-                height: [
-                  "clamp(100px,12vw,200px)",
-                  "clamp(120px,15vw,240px)",
-                  "clamp(80px,10vw,160px)",
-                  "clamp(60px,8vw,120px)",
-                ][i],
+                width: ["100px", "120px", "80px", "60px"][i],
+                height: ["100px", "120px", "80px", "60px"][i],
+                top: ["25%", "66%", "75%", "33%"][i],
+                left: ["25%", "75%", "33%", "80%"][i],
               }}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{
@@ -267,36 +215,6 @@ export const BackgroundEffects = ({ children }) => {
             />
           ))}
         </div>
-
-        {/* First Dynamic mouse follow effect */}
-        <motion.div
-          className="absolute inset-0 opacity-25 pointer-events-none"
-          style={{
-            background: `radial-gradient(${mouseRadius.current}px circle at ${mousePosition.x}px ${mousePosition.y}px, 
-              rgba(0, 217, 255, 0.5),
-              rgba(168, 85, 247, 0.4),
-              transparent 70%)`,
-          }}
-          transition={{
-            background: { duration: 0.2, ease: "easeOut" },
-            layout: { duration: 0.5 },
-          }}
-        />
-
-        {/* Second Dynamic mouse follow effect */}
-        <motion.div
-          className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{
-            background: `radial-gradient(${mouseRadius.current}px circle at ${mousePosition.x}px ${mousePosition.y}px, 
-              rgba(0, 217, 255, 0.4),
-              rgba(168, 85, 247, 0.3),
-              transparent 70%)`,
-          }}
-          transition={{
-            background: { duration: 0.2, ease: "easeOut" },
-            layout: { duration: 0.5 },
-          }}
-        />
 
         {children}
       </div>
