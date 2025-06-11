@@ -68,7 +68,7 @@ export const TitleSection = () => {
             {/* Spinner Circle */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div
-                className="w-[clamp(8rem,20vw,16rem)] h-[clamp(6rem,13vw,11rem)] border-2 border-cyan-400/30 rounded-full animate-spin"
+                className="w-[clamp(8rem,20vw,16rem)] h-[clamp(6rem,13vw,10rem)] border-2 border-cyan-400/30 rounded-full animate-spin"
                 style={{ animationDuration: "8s" }}
               >
                 <div

@@ -20,14 +20,12 @@ export const BackgroundEffects = ({ children }) => {
     const resizeCanvas = () => {
       const width = window.innerWidth;
       const height = window.innerHeight;
-
       const dpr = window.devicePixelRatio || 1;
       canvas.width = width * dpr;
       canvas.height = height * dpr;
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
       ctx.scale(dpr, dpr);
-
       initParticles();
     };
 
@@ -39,11 +37,8 @@ export const BackgroundEffects = ({ children }) => {
       );
 
       particlesRef.current = Array.from({ length: particleCount }, () => {
-        // Spread particles evenly across the canvas
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
-
-        // Give particles random initial velocities
         const speed = Math.random() * 0.5 + 0.1;
         const angle = Math.random() * Math.PI * 2;
 
@@ -81,7 +76,6 @@ export const BackgroundEffects = ({ children }) => {
       const mouseY = mousePositionRef.current.y;
 
       particlesRef.current.forEach((particle) => {
-        // Mouse interaction
         if (mouseX !== null && mouseY !== null) {
           const dx = particle.x - mouseX;
           const dy = particle.y - mouseY;
@@ -96,22 +90,19 @@ export const BackgroundEffects = ({ children }) => {
             particle.speedX = forceX;
             particle.speedY = forceY;
           } else {
-            // Gradually return to base speed
             particle.speedX += (particle.baseSpeedX - particle.speedX) * 0.05;
             particle.speedY += (particle.baseSpeedY - particle.speedY) * 0.05;
           }
         }
 
-        // Update position
         particle.x += particle.speedX;
         particle.y += particle.speedY;
 
-        // Improved boundary handling with bounce
         const margin = particle.size;
         if (particle.x < margin) {
           particle.x = margin;
-          particle.speedX *= -0.5; // Reduced bounce factor
-          particle.baseSpeedX *= -1; // Also reverse base direction
+          particle.speedX *= -0.5;
+          particle.baseSpeedX *= -1;
         } else if (particle.x > canvas.width - margin) {
           particle.x = canvas.width - margin;
           particle.speedX *= -0.5;
@@ -133,7 +124,6 @@ export const BackgroundEffects = ({ children }) => {
     const drawParticles = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw connections
       const connectionDistance = 120;
       ctx.lineWidth = 0.5;
 
@@ -158,7 +148,6 @@ export const BackgroundEffects = ({ children }) => {
         }
       }
 
-      // Draw particles
       particlesRef.current.forEach((particle) => {
         ctx.save();
         ctx.globalAlpha = particle.opacity;
@@ -196,7 +185,6 @@ export const BackgroundEffects = ({ children }) => {
       />
 
       <div className="w-full flex-1 flex flex-col items-center justify-start relative z-10">
-        {/* Gradient overlay */}
         <motion.div
           className="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-black/30 to-cyan-900/10"
           initial={{ opacity: 0 }}
@@ -204,7 +192,6 @@ export const BackgroundEffects = ({ children }) => {
           transition={{ duration: 2 }}
         />
 
-        {/* Floating blobs */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {[0, 1, 2, 3].map((i) => (
             <motion.div
@@ -249,7 +236,6 @@ export const BackgroundEffects = ({ children }) => {
           ))}
         </div>
 
-        {/* Mouse follow effect */}
         <motion.div
           className="absolute inset-0 opacity-15 pointer-events-none"
           style={{
