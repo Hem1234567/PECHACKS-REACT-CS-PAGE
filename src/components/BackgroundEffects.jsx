@@ -211,7 +211,7 @@ export const BackgroundEffects = ({ children }) => {
               key={i}
               className={`absolute rounded-full blur-[clamp(20px,2.5vw,40px)] ${
                 [
-                  "bg-cyan-500/25 top-1/4 left-1/4",
+                  "bg-purple-700/25 top-1/4 left-1/4",
                   "bg-purple-500/25 top-3/4 right-1/4",
                   "bg-pink-500/25 bottom-1/4 left-1/3",
                   "bg-blue-500/20 top-1/3 right-1/5",
