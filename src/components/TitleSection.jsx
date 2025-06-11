@@ -8,20 +8,6 @@ export const TitleSection = () => {
       transition={{ duration: 1, delay: 0.2 }}
       className="space-y-3 w-full px-4"
     >
-      {/* Logo positioned like in the image - hidden on mobile */}
-      <motion.div
-        className="hidden sm:flex items-center justify-center mb-10 mr-[650px]"
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, delay: 0.4 }}
-      >
-        <img
-          src="/pechacks bgr.png"
-          alt="PEC Hacks Logo"
-          className="h-6 sm:h-8"
-        />
-      </motion.div>
-
       <div className="space-y-2 sm:space-y-1">
         <motion.div
           className="relative"
@@ -29,6 +15,21 @@ export const TitleSection = () => {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 1.2, delay: 0.5 }}
         >
+          {/* Logo with controlled spacing */}
+          <motion.div
+            className="hidden sm:flex justify-start mb-8 sm:mb-10"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+          >
+            <img
+              src="/pechacks bgr.png"
+              alt="PEC Hacks Logo"
+              className="h-8 sm:h-10"
+            />
+          </motion.div>
+
+          {/* Main heading with enhanced glow effect */}
           <h1 className="text-[clamp(3.1rem,7vw,6rem)] font-black relative leading-[1.1] cursor-default font-[Poppins]">
             <span className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-purple-500 via-pink-500 to-cyan-400 bg-clip-text text-transparent blur-sm animate-pulse">
               PEC HACKS
@@ -42,13 +43,42 @@ export const TitleSection = () => {
           </h1>
         </motion.div>
 
+        {/* Version number with rotating circles */}
         <motion.div
-          className="relative flex justify-center"
+          className="relative flex justify-center mt-2 sm:mt-4"
           initial={{ rotateY: 180, opacity: 0 }}
           animate={{ rotateY: 0, opacity: 1 }}
-          transition={{ duration: 1.5, delay: 0.8 }}
+          transition={{
+            duration: 1.5,
+            delay: 0.8,
+            type: "spring",
+            damping: 10,
+            stiffness: 100,
+          }}
         >
           <div className="relative group">
+            {/* Spinner Circle */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div
+                className="w-[clamp(8rem,20vw,16rem)] h-[clamp(6rem,13vw,10rem)] border-2 border-cyan-400/30 rounded-full animate-spin"
+                style={{ animationDuration: "8s" }}
+              >
+                <div
+                  className="absolute inset-[0.5rem] border border-purple-500/50 rounded-full animate-spin"
+                  style={{
+                    animationDuration: "6s",
+                    animationDirection: "reverse",
+                  }}
+                >
+                  <div
+                    className="absolute inset-[0.5rem] border border-pink-500/30 rounded-full animate-spin"
+                    style={{ animationDuration: "4s" }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Version number text layers */}
             <div className="absolute inset-0 text-[clamp(3rem,7vw,5rem)] font-black cursor-default">
               <span className="absolute inset-0 text-cyan-400 blur-[clamp(8px,1vw,16px)] animate-pulse transform -translate-x-2 -translate-y-2">
                 3.0
@@ -82,11 +112,16 @@ export const TitleSection = () => {
         </motion.div>
       </div>
 
+      {/* Subtitle */}
       <motion.div
         className="text-[clamp(1.3rem,1.8vw,1.8rem)] font-light max-w-[90vw] md:max-w-3xl mx-auto leading-relaxed space-y-2 sm:space-y-2 font-[Poppins]"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 1.2 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 1,
+          delay: 1.2,
+          ease: "easeOut",
+        }}
       >
         <p className="cursor-default">
           <span className="text-gray-300 font-semibold">Tamil Nadu's </span>
