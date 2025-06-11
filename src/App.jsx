@@ -6,7 +6,7 @@ import { SocialLinks } from "./components/SocialLinks";
 export const App = () => {
   return (
     <BackgroundEffects>
-      <header className="w-full fixed top-0 z-50 bg-transparent backdrop-blur-md">
+      <header className="w-full fixed top-0 z-50 bg-transparent backdrop-blur-md sm:hidden">
         <nav className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3 sm:py-3">
           <a href="#" className="flex items-center space-x-2 cursor-pointer">
             <img src="/pechacks bgr.png" alt="Logo" className="h-6 sm:h-8" />

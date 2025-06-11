@@ -8,6 +8,20 @@ export const TitleSection = () => {
       transition={{ duration: 1, delay: 0.2 }}
       className="space-y-3 w-full px-4"
     >
+      {/* Logo positioned like in the image - hidden on mobile */}
+      <motion.div
+        className="hidden sm:flex items-center justify-center mb-10 mr-[650px]"
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, delay: 0.4 }}
+      >
+        <img
+          src="/pechacks bgr.png"
+          alt="PEC Hacks Logo"
+          className="h-6 sm:h-8"
+        />
+      </motion.div>
+
       <div className="space-y-2 sm:space-y-1">
         <motion.div
           className="relative"
@@ -63,27 +77,6 @@ export const TitleSection = () => {
               <span className="relative bg-gradient-to-r from-white via-cyan-200 to-white bg-clip-text text-transparent">
                 3.0
               </span>
-            </div>
-
-            {/* Spinner Circle */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div
-                className="w-[clamp(8rem,20vw,16rem)] h-[clamp(6rem,13vw,10rem)] border-2 border-cyan-400/30 rounded-full animate-spin"
-                style={{ animationDuration: "8s" }}
-              >
-                <div
-                  className="absolute inset-[0.5rem] border border-purple-500/50 rounded-full animate-spin"
-                  style={{
-                    animationDuration: "6s",
-                    animationDirection: "reverse",
-                  }}
-                >
-                  <div
-                    className="absolute inset-[0.5rem] border border-pink-500/30 rounded-full animate-spin"
-                    style={{ animationDuration: "4s" }}
-                  ></div>
-                </div>
-              </div>
             </div>
           </div>
         </motion.div>
