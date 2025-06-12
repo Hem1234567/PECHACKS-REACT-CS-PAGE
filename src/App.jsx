@@ -8,7 +8,7 @@ export const App = () => {
     <BackgroundEffects>
       <header className="w-full fixed top-0 z-50 bg-transparent backdrop-blur-md">
         <nav className="max-w-7xl mx-auto flex items-center justify-between px-4 py-3 sm:py-3">
-          <a href="#" className="flex items-center cursor-pointer">
+          <a href="#" className="flex items-center cursor-default">
             <img
               src="/pechacks bgr.png"
               alt="Logo"
