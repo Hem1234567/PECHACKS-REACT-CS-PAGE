@@ -25,7 +25,7 @@ export const TitleSection = () => {
             <img
               src="/pechacks bgr.png"
               alt="PEC Hacks Logo"
-              className="h-8 sm:h-10"
+              className="h-6 sm:h-8"
             />
           </motion.div>
 
