@@ -2,6 +2,7 @@ import { BackgroundEffects } from "./components/BackgroundEffects";
 import { TitleSection } from "./components/TitleSection";
 import { CTAButtons } from "./components/CTAButtons";
 import { SocialLinks } from "./components/SocialLinks";
+import { Header } from "./components/Header";
 
 export const App = () => {
   return (
@@ -16,6 +17,7 @@ export const App = () => {
 
       <div className="relative z-20 w-full flex flex-col items-center justify-center text-center pt-20 pb-10 px-4 min-h-screen">
         <div className="max-w-4xl w-full mx-auto">
+          <Header/>
           <TitleSection />
           <CTAButtons />
           <SocialLinks />

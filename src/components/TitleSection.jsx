@@ -15,19 +15,7 @@ export const TitleSection = () => {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 1.2, delay: 0.5 }}
         >
-          {/* Logo with controlled spacing */}
-          <motion.div
-            className="hidden sm:flex justify-start mb-8 sm:mb-3"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            <img
-              src="/pechacks bgr.png"
-              alt="PEC Hacks Logo"
-              className="h-6 sm:h-8"
-            />
-          </motion.div>
+          
 
           {/* Main heading with enhanced glow effect */}
           <h1 className="text-[clamp(3.1rem,7vw,6rem)] font-black relative leading-[1.1] cursor-default font-[Poppins]">
